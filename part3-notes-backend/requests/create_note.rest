@@ -1,0 +1,8 @@
+post http://localhost:3003/api/notes
+Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InJvb3BlIiwiaWQiOiI1ZTY2OWI3ODVhNGIzYjJiZGM2MDlkODMiLCJpYXQiOjE1ODM3ODUwMTh9.thSOL1l4exA1v_B8YXKqeKzqEr13mNyjRkTDLlBF3Tw
+
+{
+  "content": "note 546456456",
+  "important": false
+}
