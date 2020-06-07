@@ -4,7 +4,7 @@ import blogService from './services/blogs'
 import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
-import Notification from './components/Notification'
+// import Notification from './components/Notification'
 import Togglable from './components/Togglable'
 
 const App = () => {
@@ -111,15 +111,9 @@ const App = () => {
 
   const blogForm = () => {
     return (
-      <Togglable buttonLabel='new blog' ref={blogFormRef}>
+      <Togglable buttonId='new-blog-button' buttonLabel='new blog' ref={blogFormRef}>
         <BlogForm createBlog={createBlog} />
       </Togglable>
-    )
-  }
-
-  if (user === null) {
-    return (
-      <LoginForm handleLogin={handleLogin} message={notificationMsg} />
     )
   }
 
@@ -137,12 +131,16 @@ const App = () => {
       )
   )
 
+  if (user === null) {
+    return (
+      <LoginForm handleLogin={handleLogin} message={notificationMsg} />
+    )
+  }
+
   return (
     <div>
       <h2>blogs</h2>
-      <div className="notification">
-        <Notification message={notificationMsg} />
-      </div>
+      {/* <Notification message={notificationMsg} /> */}
       {user.name} logged in
       <button onClick={handleLogout}>log out</button>
       {blogForm()}
