@@ -49,13 +49,17 @@ describe('Blog app', function() {
     })
 
     describe('and a blog exists', function() {
-      cy.createBlog({ 
-        title: 'another blog created by Cypress',
-        author: 'Roope Laakso',
-        url: '-'
+      beforeEach(function() {
+        cy.createBlog({ 
+          title: 'another blog created by Cypress',
+          author: 'Roope Laakso',
+          url: '-'
+        })
       })
-
-      it('')
+      
+      it('blog can be liked', function() {
+        
+      })
     })
   })
 })
