@@ -7,7 +7,6 @@ import LoginForm from './components/LoginForm'
 import Footer from './components/Footer'
 import NoteForm from './components/NoteForm'
 import Togglable from './components/Togglable'
-// import NoteForm from './components/NoteForm';
 
 const App = () => {
   const [notes, setNotes] = useState([])
