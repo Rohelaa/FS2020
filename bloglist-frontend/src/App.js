@@ -1,22 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
-import loginService from './services/login'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
-// import Notification from './components/Notification'
 import Togglable from './components/Togglable'
+import Notification from './components/Notification'
+import { useDispatch, useSelector } from 'react-redux'
+import { initializeBlogs, createNewBlog } from './reducers/blogReducer'
+import { like } from './reducers/blogReducer'
 
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [notificationMsg, setNotificationMsg] = useState(null)
+
+  const dispatch = useDispatch()
+  const blogsInStore = useSelector(state => state.blogs)
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
-      setBlogs( blogs )
+      dispatch(initializeBlogs(blogs))
     )
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
@@ -27,29 +31,6 @@ const App = () => {
     }
   }, [])
 
-  useEffect(() => {
-    setTimeout(() => {
-      setNotificationMsg(null)
-    }, 5000)
-  }, [notificationMsg])
-
-  const handleLogin = async (userObject) => {
-    try {
-      const user = await loginService.login(userObject)
-
-      window.localStorage.setItem(
-        'loggedBlogappUser', JSON.stringify(user)
-      )
-
-      console.log(window.localStorage)
-      blogService.setToken(user.token)
-      setUser(user)
-    } catch (exception) {
-      console.error(exception)
-      setNotificationMsg('wrong username or password')
-    }
-  }
-
   const addLike = async (blog) => {
     const updatedBlog = {
       ...blog,
@@ -59,14 +40,14 @@ const App = () => {
     try {
       const response = await blogService.update(updatedBlog)
       console.log(response)
-      console.log(blogs)
-      const blogsUpdated = blogs
-        .filter(b => b.id !== response.id)
-        .concat(updatedBlog)
+      dispatch(like(updatedBlog))
+      // const blogsUpdated = blogs
+      //   .filter(b => b.id !== response.id)
+      //   .concat(updatedBlog)
 
-      console.log('updated...', blogsUpdated)
+      // console.log('updated...', blogsUpdated)
 
-      setBlogs(blogsUpdated)
+      // setBlogs(blogsUpdated)
       // console.log('response: ', response)
       // const blogs = await blogService.getAll()
       // console.log(blogs)
@@ -81,8 +62,7 @@ const App = () => {
       const createdBlog = await blogService.create(newBlog)
       console.log(createdBlog)
       blogFormRef.current.toggleVisibility()
-      setBlogs(blogs.concat(createdBlog))
-      // setNotificationMsg(`a new blog ${blog.title} by ${blog.author} added`)
+      dispatch(createNewBlog(createdBlog))
       console.log('created blog: ', createdBlog)
     } catch (exception) {
       console.error(exception)
@@ -118,7 +98,7 @@ const App = () => {
   }
 
   const blogsSorted = () => (
-    blogs
+    blogsInStore
       .sort((a, b) => b.likes - a.likes)
       .map(blog =>
         <Blog
@@ -133,14 +113,19 @@ const App = () => {
 
   if (user === null) {
     return (
-      <LoginForm handleLogin={handleLogin} message={notificationMsg} />
+      <div>
+        <Notification />
+        <LoginForm
+          setUser={setUser}
+        />
+      </div>
     )
   }
 
   return (
     <div>
       <h2>blogs</h2>
-      {/* <Notification message={notificationMsg} /> */}
+      <Notification />
       {user.name} logged in
       <button onClick={handleLogout}>log out</button>
       {blogForm()}
