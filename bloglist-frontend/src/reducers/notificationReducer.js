@@ -3,7 +3,7 @@ const notificationReducer = (state = null, action) => {
     case "SHOW_NOTIFICATION":
       return action.data
     case "HIDE_NOTIFICATION":
-      return null 
+      return null
     default:
       return state
   }

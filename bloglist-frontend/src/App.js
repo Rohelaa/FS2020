@@ -1,20 +1,40 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import Blog from './components/Blog'
 import blogService from './services/blogs'
+import userService from './services/users'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
 import Notification from './components/Notification'
 import { useDispatch, useSelector } from 'react-redux'
 import { initializeBlogs, createNewBlog } from './reducers/blogReducer'
-import { like } from './reducers/blogReducer'
+import { addUser, removeUser } from './reducers/userReducer'
+import { Switch, Route, Link, useRouteMatch, Redirect, } from 'react-router-dom'
+import Users from './components/Users'
+import User from './components/User'
+import Container from '@material-ui/core/Container'
+import Blogs from './components/Blogs'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
-  const [user, setUser] = useState(null)
+  const [users, setUsers] = useState([])
 
+  useEffect(() => {
+    userService
+      .getAll()
+      .then(response => {
+        console.log(response)
+        setUsers(response)
+      })
+  }, [])
+
+  const user = useSelector(state => state.user)
   const dispatch = useDispatch()
-  const blogsInStore = useSelector(state => state.blogs)
+  const blogs = useSelector(state => state.blogs)
+
+  const match = useRouteMatch('/blogs/:id')
+  const blog = match
+    ? blogs.find(blog => blog.id === match.params.id)
+    : null
 
   useEffect(() => {
     blogService.getAll().then(blogs =>
@@ -26,36 +46,11 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      setUser(user)
+      // console.log('user\'s info: ', user)
+      dispatch(addUser(user))
       blogService.setToken(user.token)
     }
-  }, [])
-
-  const addLike = async (blog) => {
-    const updatedBlog = {
-      ...blog,
-      likes: blog.likes + 1
-    }
-
-    try {
-      const response = await blogService.update(updatedBlog)
-      console.log(response)
-      dispatch(like(updatedBlog))
-      // const blogsUpdated = blogs
-      //   .filter(b => b.id !== response.id)
-      //   .concat(updatedBlog)
-
-      // console.log('updated...', blogsUpdated)
-
-      // setBlogs(blogsUpdated)
-      // console.log('response: ', response)
-      // const blogs = await blogService.getAll()
-      // console.log(blogs)
-      // setBlogs(blogs)
-    } catch (err) {
-      console.error(err)
-    }
-  }
+  }, [dispatch])
 
   const createBlog = async (newBlog) => {
     try {
@@ -69,21 +64,9 @@ const App = () => {
     }
   }
 
-  const removeBlog = async blog => {
-    try {
-      if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
-        // console.log(blog)
-        blogService.remove(blog)
-        setBlogs(blogs.filter(b => b.id !== blog.id))
-      }
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
-    setUser(null)
+    dispatch(removeUser())
     console.log(window.localStorage)
   }
 
@@ -97,40 +80,64 @@ const App = () => {
     )
   }
 
-  const blogsSorted = () => (
-    blogsInStore
-      .sort((a, b) => b.likes - a.likes)
-      .map(blog =>
-        <Blog
-          user={user}
-          key={blog.id}
-          blog={blog}
-          handleDelete={removeBlog}
-          handleLike={addLike}
-        />
-      )
-  )
+  // const blogsSorted = () => (
+  //   blogs
+  //     .sort((a, b) => b.likes - a.likes)
+  //     .map(blog =>
+  //       <Link key={blog.id} to={`blogs/${blog.id}`}>
+  //         <div>
+  //           {blog.title} {blog.author}
+  //         </div>
+  //       </Link>
+  //     )
+  // )
 
   if (user === null) {
     return (
       <div>
         <Notification />
-        <LoginForm
-          setUser={setUser}
-        />
+        <LoginForm />
       </div>
     )
   }
 
+  const padding = {
+    padding: 5
+  }
+
+  const navigationBar = {
+    padding: 5,
+    background: '#99ffb3'
+  }
+
   return (
-    <div>
+    <Container>
+      <div style={navigationBar}>
+        <Link style={padding} to="/">blogs</Link>
+        <Link style={padding} to="/users">users</Link>
+        {user.name} logged in
+        <button onClick={handleLogout}>log out</button>
+      </div>
       <h2>blogs</h2>
-      <Notification />
-      {user.name} logged in
-      <button onClick={handleLogout}>log out</button>
-      {blogForm()}
-      {blogsSorted()}
-    </div>
+      <div>
+        <Notification />
+      </div>
+      <Switch>
+        <Route path="/blogs/:id">
+          {blog ? <Blog blog={blog} /> : <Redirect to="/"/>}
+        </Route>
+        <Route path="/users/:id">
+          <User users={users}/>
+        </Route>
+        <Route path="/users">
+          <Users users={users}/>
+        </Route>
+        <Route path="/">
+          {blogForm()}
+          <Blogs blogs={blogs} />
+        </Route>
+      </Switch>
+    </Container>
   )
 }
 

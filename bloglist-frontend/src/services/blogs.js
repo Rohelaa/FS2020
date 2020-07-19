@@ -22,6 +22,11 @@ const create = async newObject => {
   return response.data
 }
 
+// const createComment = async (object, comment) => {
+//   const response = await axios.post(`${baseUrl}/${object.id}/comments`, comment)
+//   console.log('response for submitting a comment: ', response)
+// }
+
 const update = async object => {
   const response = await axios.put(`${baseUrl}/${object.id}`, object)
   console.log('response.data: ', response.data)
@@ -43,5 +48,5 @@ export default {
   create,
   setToken,
   update,
-  remove
+  remove,
 }

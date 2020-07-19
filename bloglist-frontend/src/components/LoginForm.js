@@ -3,8 +3,9 @@ import loginService from '../services/login'
 import blogService from '../services/blogs'
 import { useDispatch } from 'react-redux'
 import { showNotification, hideNotification } from '../reducers/notificationReducer'
+import { addUser } from '../reducers/userReducer'
 
-const LoginForm = ({ setUser }) => {
+const LoginForm = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -21,7 +22,7 @@ const LoginForm = ({ setUser }) => {
 
       console.log(window.localStorage)
       blogService.setToken(user.token)
-      setUser(user)
+      dispatch(addUser(user))
       dispatch(showNotification('Succesfully logged in'))
       setTimeout(() => {
         dispatch(hideNotification())

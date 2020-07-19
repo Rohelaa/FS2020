@@ -1,67 +1,88 @@
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
+import { remove, like, commentBlog } from '../reducers/blogReducer'
+import { showNotification } from '../reducers/notificationReducer'
+import blogService from '../services/blogs'
+import commentService from '../services/comments'
 
-const Blog = ({ blog, user, handleDelete, handleLike }) => {
-  const [expand, setExpand] = useState(false)
+const Blog = ({ blog }) => {
+  const [comment, setComment] = useState('')
 
-  // const addLike = async () => {
-  //   const updatedBlog = {
-  //     ...blog,
-  //     likes: blog.likes + 1
-  //   }
+  const dispatch = useDispatch()
 
-  //   console.log('updated blog: ', updatedBlog)
-
-  //   try {
-  //     const response = await blogService.update(updatedBlog)
-  //     console.log('response: ', response)
-  //     setBlog({
-  //       ...blog,
-  //       likes: response.likes
-  //     })
-  //   } catch (error) {
-  //     console.error(error)
-  //   }
-  // }
-
-  const blogStyle = {
-    border: 'solid',
-    borderWidth: 1,
-    padding: 3,
-    marginTop: 5
+  const removeBlog = async blog => {
+    try {
+      if (window.confirm(`Remove blog ${blog.title} by ${blog.author}`)) {
+        await blogService.remove(blog)
+        dispatch(remove(blog))
+      }
+    } catch (exception) {
+      console.error(exception)
+    }
   }
 
-  if (!expand) {
-    return (
-      <div className='blog' style={blogStyle}>
-        {blog.title} {blog.author}
-        <button onClick={() => setExpand(!expand)}>view</button>
-      </div>
-    )
+  const addLike = async (blog) => {
+    const updatedBlog = {
+      ...blog,
+      likes: blog.likes + 1
+    }
+
+    try {
+      const response = await blogService.update(updatedBlog)
+      console.log(response)
+      dispatch(like(updatedBlog))
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  if (!blog) {
+    return null
+  }
+
+  const comments = () => (
+    <ul>
+      {blog.comments.map((com, index) =>
+        <li key={index}>{com}</li>)}
+    </ul>
+  )
+
+  const submitComment = async (event) => {
+    try {
+      event.preventDefault()
+      const commentObject = {
+        content: comment
+      }
+      const updatedBlog = await commentService.create(blog, commentObject)
+      dispatch(commentBlog(updatedBlog))
+      // console.log(response)
+    } catch (error) {
+      console.error(error)
+    }
   }
 
   return (
-    <div style={blogStyle} className='expandedBlog'>
-      {blog.title} {blog.author}
-      <button onClick={() => setExpand(!expand)}>hide</button>
+    <div>
+      <h2>{blog.title}</h2>
+      {blog.url}
       <div>
+        {blog.likes}
+        <button onClick={() => addLike(blog)}>like</button>
         <div>
-          {blog.url}
+          added by {blog.user.name}
         </div>
-        <div className='likes'>
-          likes {blog.likes} <button onClick={() => handleLike(blog)}>like</button>
-        </div>
-        {
-          Object.prototype.hasOwnProperty.call(blog, 'user') ?
-            <div className='user'>
-              {blog.user.name}
-            </div>
-            : null
-        }
-        {
-          user.name === blog.user.name ?
-            <button onClick={() => handleDelete(blog)}>remove</button>
-            : null
-        }
+        <button onClick={() => removeBlog(blog)}>delete</button>
+      </div>
+      <div>
+        <h3>comments</h3>
+        <form onSubmit={submitComment}>
+          <input
+            value={comment}
+            onChange={event => setComment(event.target.value)}
+          />
+          <button type="submit">add comment</button>
+        </form>
+        {comments()}
       </div>
     </div>
   )
