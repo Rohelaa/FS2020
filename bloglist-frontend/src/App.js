@@ -4,16 +4,16 @@ import blogService from './services/blogs'
 import userService from './services/users'
 import BlogForm from './components/BlogForm'
 import LoginForm from './components/LoginForm'
-import Togglable from './components/Togglable'
 import Notification from './components/Notification'
 import { useDispatch, useSelector } from 'react-redux'
-import { initializeBlogs, createNewBlog } from './reducers/blogReducer'
+import { initializeBlogs } from './reducers/blogReducer'
 import { addUser, removeUser } from './reducers/userReducer'
 import { Switch, Route, Link, useRouteMatch, Redirect, } from 'react-router-dom'
 import Users from './components/Users'
 import User from './components/User'
 import Container from '@material-ui/core/Container'
 import Blogs from './components/Blogs'
+import NavBar from './components/NavBar'
 
 const App = () => {
   const [users, setUsers] = useState([])
@@ -46,51 +46,16 @@ const App = () => {
     const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser')
     if (loggedUserJSON) {
       const user = JSON.parse(loggedUserJSON)
-      // console.log('user\'s info: ', user)
       dispatch(addUser(user))
       blogService.setToken(user.token)
     }
   }, [dispatch])
-
-  const createBlog = async (newBlog) => {
-    try {
-      const createdBlog = await blogService.create(newBlog)
-      console.log(createdBlog)
-      blogFormRef.current.toggleVisibility()
-      dispatch(createNewBlog(createdBlog))
-      console.log('created blog: ', createdBlog)
-    } catch (exception) {
-      console.error(exception)
-    }
-  }
 
   const handleLogout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     dispatch(removeUser())
     console.log(window.localStorage)
   }
-
-  const blogFormRef = React.createRef()
-
-  const blogForm = () => {
-    return (
-      <Togglable buttonId='new-blog-button' buttonLabel='new blog' ref={blogFormRef}>
-        <BlogForm createBlog={createBlog} />
-      </Togglable>
-    )
-  }
-
-  // const blogsSorted = () => (
-  //   blogs
-  //     .sort((a, b) => b.likes - a.likes)
-  //     .map(blog =>
-  //       <Link key={blog.id} to={`blogs/${blog.id}`}>
-  //         <div>
-  //           {blog.title} {blog.author}
-  //         </div>
-  //       </Link>
-  //     )
-  // )
 
   if (user === null) {
     return (
@@ -101,23 +66,9 @@ const App = () => {
     )
   }
 
-  const padding = {
-    padding: 5
-  }
-
-  const navigationBar = {
-    padding: 5,
-    background: '#99ffb3'
-  }
-
   return (
     <Container>
-      <div style={navigationBar}>
-        <Link style={padding} to="/">blogs</Link>
-        <Link style={padding} to="/users">users</Link>
-        {user.name} logged in
-        <button onClick={handleLogout}>log out</button>
-      </div>
+      <NavBar handleLogOut={handleLogout} user={user} />
       <h2>blogs</h2>
       <div>
         <Notification />
@@ -133,7 +84,7 @@ const App = () => {
           <Users users={users}/>
         </Route>
         <Route path="/">
-          {blogForm()}
+          <BlogForm />
           <Blogs blogs={blogs} />
         </Route>
       </Switch>
