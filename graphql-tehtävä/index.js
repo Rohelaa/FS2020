@@ -160,7 +160,7 @@ const resolvers = {
   },
   Mutation: {
     addBook: (root, args) => {
-      if (authors.find(a => a.name === args.author) === undefined) {
+      if (!authors.find(a => a.name === args.author)) {
         const author = {
           name: args.author,
           born: null,
@@ -175,12 +175,13 @@ const resolvers = {
       return book
     },
     editAuthor: (root, args) => {
-      if (authors.find(a => a.name === args.name) === undefined) {
+      if (!authors.find(a => a.name === args.name)) {
         return null
       }
 
       let author = authors.find(a => a.name === args.name)
       author = { ...author, born: args.setBornTo }
+      console.log(author)
       authors = authors.map(a => 
         a.name === args.name ? author : a
       )
