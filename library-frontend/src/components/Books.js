@@ -5,6 +5,8 @@ import { ALL_BOOKS } from '../queries'
 const Books = (props) => {
   const books = useQuery(ALL_BOOKS)
 
+  console.log(books)
+
   if (!props.show) {
     return null
   }
@@ -16,7 +18,6 @@ const Books = (props) => {
   return (
     <div>
       <h2>books</h2>
-
       <table>
         <tbody>
           <tr>
@@ -28,13 +29,15 @@ const Books = (props) => {
               published
             </th>
           </tr>
-          {books.data.allBooks.map(a =>
-            <tr key={a.title}>
-              <td>{a.title}</td>
-              <td>{a.author}</td>
-              <td>{a.published}</td>
-            </tr>
-          )}
+          {books.data ? 
+            books.data.allBooks.map(a =>
+              <tr key={a.title}>
+                <td>{a.title}</td>
+                <td>{a.author.name}</td>
+                <td>{a.published}</td>
+              </tr>
+            )
+            : null}
         </tbody>
       </table>
     </div>

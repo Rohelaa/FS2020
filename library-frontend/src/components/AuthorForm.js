@@ -19,7 +19,7 @@ const AuthorForm = ({ authors }) => {
     setBirthyear('')
   }
 
-  console.log(authors)
+  // console.log(authors)
 
   const options = authors.map(a => {
     return { value: a.name, label: a.name }
