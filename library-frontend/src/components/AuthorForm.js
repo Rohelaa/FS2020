@@ -3,12 +3,15 @@ import { useMutation } from '@apollo/client'
 import { EDIT_AUTHOR, ALL_AUTHORS } from '../queries'
 import Select from 'react-select'
 
-const AuthorForm = ({ authors }) => {
+const AuthorForm = ({ authors, setError, token }) => {
   const [author, setAuthor] = useState('')
   const [birthyear, setBirthyear] = useState('')
   
   const [ editAuthor ] = useMutation(EDIT_AUTHOR, {
-    refetchQueries: [{ query: ALL_AUTHORS }]
+    refetchQueries: [{ query: ALL_AUTHORS }],
+    onError: (error) => {
+      setError(error.graphQLErrors[0].message)
+    }
   })
 
   const handleSubmit = async (event) => {
@@ -24,6 +27,10 @@ const AuthorForm = ({ authors }) => {
   const options = authors.map(a => {
     return { value: a.name, label: a.name }
   })
+
+  if (!token) {
+    return null
+  }
 
   return (
     <div>
